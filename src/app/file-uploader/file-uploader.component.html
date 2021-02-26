@@ -1,0 +1,30 @@
+<input type="file" #fileInput multiple>
+
+<hr>
+
+<h5>preview</h5>
+
+<ng-container *ngIf="files$ | async as files">
+
+	<div class="files" *ngFor="let file$ of files">
+		<ng-container *ngIf="file$ | async as file">
+			<ng-container
+				*ngTemplateOutlet="file.error ? errorTemplate : file.image ? imageTemplate : fileTemplate; context: { $implicit: file }">
+			</ng-container>
+		</ng-container>
+	</div>
+
+</ng-container>
+
+
+<ng-template #errorTemplate let-uploadedFile>
+	<div class="file file--error">{{uploadedFile.error.name}} - {{uploadedFile.error.errorMessage}}</div>
+</ng-template>
+
+<ng-template #imageTemplate let-uploadedFile>
+	<div class="file file--image"><img src="{{uploadedFile.image.src}}" title="{{uploadedFile.file.name}}" /></div>
+</ng-template>
+
+<ng-template #fileTemplate let-uploadedFile>
+	<div class="file">{{uploadedFile.file.name}}</div>
+</ng-template>

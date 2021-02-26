@@ -1,0 +1,11 @@
+.file {
+  margin: 4px;
+}
+
+.file--error {
+  color: red;
+}
+
+.file--image {
+  height: 50px;
+}
