@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, ViewChild } from "@angular/core";
 import { combineLatest, fromEvent, Observable,  Observer, of, Subject } from "rxjs";
-import { catchError, filter,  map, take, takeUntil } from "rxjs/operators";
+import { catchError, filter,  map, switchMap,  take, takeUntil, tap } from "rxjs/operators";
 import { IUploadedFile, IVerifiedFile } from "../models/uploaded-file.model";
 
 const INVALID_FILE = ' Invalid file.';
@@ -22,7 +22,7 @@ export class FileUploaderComponent {
 
   @ViewChild('fileInput') fileInputRef;
 
-  files$: Observable<Observable<IUploadedFile>[]>;
+  files$: Observable<IUploadedFile[]>;
 
 
   unsubscribe = new Subject<void>();
@@ -35,23 +35,24 @@ export class FileUploaderComponent {
     this.files$ = fromEvent(this.fileInputRef.nativeElement, 'change').pipe(
       map((event: any) => event?.target?.files),
       filter((files: FileList) => files.length > 0),
-      map((files) => {
-        const validatedFiles = []
+      switchMap((files) => {
+        const validatedFiles: Observable<IUploadedFile>[] = []
+
         for (const file of Object.values(files)) {
           validatedFiles.push(this.validateFile(file).pipe(catchError((error: IUploadedFile) => of(error))))
         }
-        return validatedFiles;
+        return combineLatest(validatedFiles);
       }),
     )
 
-    this.files$.pipe(takeUntil(this.unsubscribe)).subscribe(uploadedFiles => {
-      combineLatest(uploadedFiles).pipe(
-        take(1),
-        map(uploadedFiles => uploadedFiles.filter(files => !files.error))
-      ).subscribe((result: IVerifiedFile[]) => {
-        this.onFileChanges.emit(result);
-      })
-    })
+    this.files$.pipe(
+        takeUntil(this.unsubscribe),
+        map((uploadedFiles: IUploadedFile[]) => uploadedFiles.filter(files => !files.error))
+    ).subscribe(result => {
+      this.onFileChanges.emit(result);
+    });
+
+  
   }
 
   private validateFile(file: File): Observable<IUploadedFile> {

@@ -6,11 +6,9 @@
 
 <ng-container *ngIf="files$ | async as files">
 
-	<div class="files" *ngFor="let file$ of files">
-		<ng-container *ngIf="file$ | async as file">
-			<ng-container
-				*ngTemplateOutlet="file.error ? errorTemplate : file.image ? imageTemplate : fileTemplate; context: { $implicit: file }">
-			</ng-container>
+	<div class="files" *ngFor="let file of files">
+		<ng-container
+			*ngTemplateOutlet="file.error ? errorTemplate : file.image ? imageTemplate : fileTemplate; context: { $implicit: file }">
 		</ng-container>
 	</div>
 
