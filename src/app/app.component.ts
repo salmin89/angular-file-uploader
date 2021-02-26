@@ -15,7 +15,7 @@ export class AppComponent {
   handleFileChanges(files: IVerifiedFile[]) {
     const [file] = files;
     if (file) {
-      console.log(file.image.src);
+      console.log("output in base64", file.image.src);
     }
   }
 }

@@ -1,20 +1,17 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from "@angular/core";
-import { combineLatest, fromEvent, Observable,  Observer, of, Subject } from "rxjs";
-import { catchError, filter,  map, switchMap,  take, takeUntil, tap } from "rxjs/operators";
-import { IUploadedFile, IVerifiedFile } from "../models/uploaded-file.model";
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { combineLatest, fromEvent, Observable, Observer, of, Subject } from 'rxjs';
+import { catchError, filter, map, shareReplay,  switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { IUploadedFile, IVerifiedFile } from '../models/uploaded-file.model';
 
 const INVALID_FILE = ' Invalid file.';
 const INVALID_IMAGE = ' Invalid image.';
 const INVALID_SIZE = ' File too large.';
 
-
 @Component({
-  selector: "app-file-uploader",
-  templateUrl: "./file-uploader.component.html",
-  styleUrls: ["./file-uploader.component.css"]
+  selector: 'app-file-uploader',
+  templateUrl: './file-uploader.component.html',
 })
 export class FileUploaderComponent {
-
   @Input() fileSizeLimit = 51200;
   @Input() initialValues: IUploadedFile[];
 
@@ -30,46 +27,43 @@ export class FileUploaderComponent {
     this.unsubscribe.complete();
   }
 
-  ngOnInit() {
-  }
-
   ngAfterViewInit() {
     this.files$ = fromEvent(this.fileInputRef.nativeElement, 'change').pipe(
       map((event: any) => event?.target?.files),
       filter((files: FileList) => files.length > 0),
       switchMap((files) => {
-        const validatedFiles: Observable<IUploadedFile>[] = []
+        const validatedFiles: Observable<IUploadedFile>[] = [];
 
         for (const file of Object.values(files)) {
-          validatedFiles.push(this.validateFile(file).pipe(catchError((error: IUploadedFile) => of(error))))
+          validatedFiles.push(this.validateFile(file).pipe(catchError((error: IUploadedFile) => of(error))));
         }
         return combineLatest(validatedFiles);
       }),
-    )
+      shareReplay()
+    );
 
-    this.files$.pipe(
+    // Emit values
+    this.files$
+      .pipe(
         takeUntil(this.unsubscribe),
-        map((uploadedFiles: IUploadedFile[]) => uploadedFiles.filter(files => !files.error))
-    ).subscribe(result => {
-      this.onFileChanges.emit(result);
-    });
-
-  
+        map((uploadedFiles: IUploadedFile[]) => uploadedFiles.filter((files) => !files.error))
+      )
+      .subscribe((result) => {
+        this.onFileChanges.emit(result);
+      });
   }
 
   private validateFile(file: File): Observable<IUploadedFile> {
     const fileReader = new FileReader();
-    
+
     return new Observable((observer: Observer<IUploadedFile>) => {
-      
       this.validateSize(file, observer);
 
       fileReader.readAsDataURL(file);
-      fileReader.onload = event => {
+      fileReader.onload = (event) => {
         this.validateFileType(file, fileReader, observer);
       };
       fileReader.onerror = () => {
-        console.log('onerror')
         observer.error({ error: { name: file.name, errorMessage: INVALID_FILE } });
       };
     });
@@ -81,27 +75,26 @@ export class FileUploaderComponent {
 
   private validateFileType(file: File, fileReader: FileReader, observer: Observer<IUploadedFile>): void {
     const { type, name } = file;
-      if (this.isImage(type)) {
-          const image = new Image();
-          image.onload = () => {
-            observer.next({ file, image });
-            observer.complete();
-          };
-          image.onerror = () => {
-            // This won't load unless we display it
-            observer.error({ error: { name, errorMessage: INVALID_IMAGE } });
-          };
-          image.src = fileReader.result as string;
-        } else {
-          observer.error({ error: { name, errorMessage: INVALID_IMAGE } });
-          observer.complete();
-        }
+    if (this.isImage(type)) {
+      const image = new Image();
+      image.onload = () => {
+        observer.next({ file, image });
+        observer.complete();
+      };
+      image.onerror = () => {
+        // image.onerror only triggers if the image is corrupt and won't load
+        observer.error({ error: { name, errorMessage: INVALID_IMAGE } });
+      };
+      image.src = fileReader.result as string;
+    } else {
+      // it's not an image
+      observer.error({ error: { name, errorMessage: INVALID_IMAGE } });
+      observer.complete();
+    }
   }
 
   private validateSize(file: File, observer: Observer<IUploadedFile>): void {
-    const {name, size} = file;
-    if (size > this.fileSizeLimit) observer.error({error: {name, errorMessage: INVALID_SIZE}});
+    const { name, size } = file;
+    if (size > this.fileSizeLimit) observer.error({ error: { name, errorMessage: INVALID_SIZE } });
   }
-
-  
 }
