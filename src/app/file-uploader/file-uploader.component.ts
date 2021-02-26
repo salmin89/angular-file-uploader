@@ -16,7 +16,7 @@ const INVALID_SIZE = ' File too large.';
 export class FileUploaderComponent {
 
   @Input() fileSizeLimit = 51200;
-  @Input() file64: string;
+  @Input() initialValues: IUploadedFile[];
 
   @Output() onFileChanges = new EventEmitter<IVerifiedFile[]>();
 
@@ -24,11 +24,13 @@ export class FileUploaderComponent {
 
   files$: Observable<IUploadedFile[]>;
 
-
   unsubscribe = new Subject<void>();
   ngOnDestroy(): void {
     this.unsubscribe.next();
     this.unsubscribe.complete();
+  }
+
+  ngOnInit() {
   }
 
   ngAfterViewInit() {

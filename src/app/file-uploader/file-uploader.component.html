@@ -4,7 +4,7 @@
 
 <h5>preview</h5>
 
-<ng-container *ngIf="files$ | async as files">
+<ng-container *ngIf="files$ | async as files; else initialTemplate">
 
 	<div class="files" *ngFor="let file of files">
 		<ng-container
@@ -15,12 +15,21 @@
 </ng-container>
 
 
+<ng-template #initialTemplate>
+	<div *ngIf="initialValues as files">
+		<div class="files" *ngFor="let file of files">
+			<ng-container *ngTemplateOutlet="file.image ? imageTemplate : fileTemplate; context: { $implicit: file }">
+			</ng-container>
+		</div>
+	</div>
+</ng-template>
+
 <ng-template #errorTemplate let-uploadedFile>
 	<div class="file file--error">{{uploadedFile.error.name}} - {{uploadedFile.error.errorMessage}}</div>
 </ng-template>
 
 <ng-template #imageTemplate let-uploadedFile>
-	<div class="file file--image"><img src="{{uploadedFile.image.src}}" title="{{uploadedFile.file.name}}" /></div>
+	<div class="file file--image"><img src="{{uploadedFile.image.src}}" title="{{uploadedFile?.file?.name}}" /></div>
 </ng-template>
 
 <ng-template #fileTemplate let-uploadedFile>

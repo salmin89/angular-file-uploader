@@ -2,7 +2,7 @@ export type IVerifiedFile = Omit<IUploadedFile, "error">;
 
 export interface IUploadedFile {
   file?: File;
-  image?: HTMLImageElement;
+  image?: Partial<HTMLImageElement>;
   error?: IUploadError;
 }
 
