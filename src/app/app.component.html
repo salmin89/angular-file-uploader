@@ -1,5 +1,13 @@
-<div class="main-container">
-
+<div style="border: 1px solid lightgray; margin: 10px; padding: 10px;">
+	Example with initial values: <br>
 	<app-file-uploader [initialValues]="initialValues" (onFileChanges)="handleFileChanges($event)"></app-file-uploader>
+</div>
 
+<br>
+<hr>
+<br>
+
+<div style="border: 1px solid lightgray; margin: 10px; padding: 10px;">
+	Example without initial values <br>
+	<app-file-uploader (onFileChanges)="handleFileChanges($event)"></app-file-uploader>
 </div>

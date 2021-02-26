@@ -1,11 +1,7 @@
 <input type="file" #fileInput multiple>
 
-<hr>
-
-<h5>preview</h5>
-
 <ng-container *ngIf="files$ | async as files; else initialTemplate">
-
+	<h5>preview</h5>
 	<div class="files" *ngFor="let file of files">
 		<ng-container
 			*ngTemplateOutlet="file.error ? errorTemplate : file.image ? imageTemplate : fileTemplate; context: { $implicit: file }">
@@ -16,6 +12,7 @@
 
 
 <ng-template #initialTemplate>
+	<h5>Current Value</h5>
 	<div *ngIf="initialValues as files">
 		<div class="files" *ngFor="let file of files">
 			<ng-container *ngTemplateOutlet="file.image ? imageTemplate : fileTemplate; context: { $implicit: file }">
