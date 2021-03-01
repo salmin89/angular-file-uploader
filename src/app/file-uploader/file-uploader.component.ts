@@ -66,6 +66,7 @@ export class FileUploaderComponent {
     ]).pipe(
         takeUntil(this.unsubscribe),
         filter(([fileChanges, removed]) => !!(fileChanges && fileChanges.length > 0) || removed.length > 0),
+        filter(([fileChanges]) => fileChanges.some(f => !f?.error)),
         map(([fileChanges, removedFiles]) => {
           const files = fileChanges || this.initialValues;
           return files.filter(file => !removedFiles.find(r => r === file) && !file.error)
