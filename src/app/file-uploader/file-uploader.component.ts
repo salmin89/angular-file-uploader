@@ -43,7 +43,7 @@ export class FileUploaderComponent {
         }
         return combineLatest(validatedFiles);
       }),
-      startWith(this.initialValues),
+      startWith(null),
       shareReplay()
     );
 
@@ -53,9 +53,9 @@ export class FileUploaderComponent {
       this.removed$])
     .pipe(
         map(([fileChanges, removedFiles]) => {
-          return fileChanges.filter(file => !removedFiles.find(r => r === file))
-      }),
-      shareReplay()
+          const files = fileChanges ||this.initialValues;
+          return files.filter(file => !removedFiles.find(r => r === file))
+      })
     )
     
 
@@ -65,9 +65,10 @@ export class FileUploaderComponent {
       this.removed$
     ]).pipe(
         takeUntil(this.unsubscribe),
-        filter(([fileChanges, removed]) => !fileChanges || removed.length > 0),
+        filter(([fileChanges, removed]) => !!(fileChanges && fileChanges.length > 0) || removed.length > 0),
         map(([fileChanges, removedFiles]) => {
-          return fileChanges.filter(file => !removedFiles.find(r => r === file) && !file.error)
+          const files = fileChanges || this.initialValues;
+          return files.filter(file => !removedFiles.find(r => r === file) && !file.error)
         })
       )
       .subscribe((result) => {
