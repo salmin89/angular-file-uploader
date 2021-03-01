@@ -1,25 +1,18 @@
 <input type="file" #fileInput multiple>
 
-<ng-container *ngIf="files$ | async as files; else initialTemplate">
+<ng-container *ngIf="files$ | async as files;">
 	<h5>preview</h5>
 	<div class="files" *ngFor="let file of files">
 		<ng-container
 			*ngTemplateOutlet="file.error ? errorTemplate : file.image ? imageTemplate : fileTemplate; context: { $implicit: file }">
 		</ng-container>
+		<button (click)="remove(file)">X</button>
 	</div>
 
 </ng-container>
 
 
-<ng-template #initialTemplate>
-	<h5>Current Value</h5>
-	<div *ngIf="initialValues as files">
-		<div class="files" *ngFor="let file of files">
-			<ng-container *ngTemplateOutlet="file.image ? imageTemplate : fileTemplate; context: { $implicit: file }">
-			</ng-container>
-		</div>
-	</div>
-</ng-template>
+
 
 <ng-template #errorTemplate let-uploadedFile>
 	<div class="file file--error">{{uploadedFile.error.name}} - {{uploadedFile.error.errorMessage}}</div>
